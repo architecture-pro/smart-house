@@ -1,0 +1,42 @@
+@startuml
+
+title Smart House Device Integration Service Component Diagram
+
+top to bottom direction
+
+!include ../c4-local/C4-Component.puml
+
+Container(DeviceService, "Сервис Управления устройствами", "Go", "Подключение и управление устройствами")
+
+Container(TelemetryService, "Сервис Телеметрии", "NestJS", "Обработка данных телеметрии устройств")
+
+Container(AutomationService, "Сервис Автоматизации", "Go", "Управление сценариями автоматизации")
+
+System_Ext(partnerDevices, "Устройства", "Устройства умного дома")
+
+Container_Boundary(DeviceIntegrationService, "Device Integration Service") {
+
+    Component(IntegrationController, "Контроллер интеграции", "Обрабатывает запросы на взаимодействие с устройствами")
+
+    Component(ServiceLayer, "Сервисный слой", "Бизнес-логика взаимодействия с устройствами")
+
+    Component(ProtocolAdapter, "Адаптер протоколов", "Преобразует команды и данные для взаимодействия с устройствами по стандартным протоколам")
+
+    Component(TelemetryHandler, "Обработчик телеметрии", "Принимает данные телеметрии от устройств")
+}
+
+Rel(DeviceService, IntegrationController, "Передает запросы регистрации и настройки устройств")
+
+Rel(AutomationService, IntegrationController, "Передает команды управления устройствами")
+
+Rel(IntegrationController, ServiceLayer, "Вызывает бизнес-логику")
+
+Rel(ServiceLayer, ProtocolAdapter, "Передает команды устройствам")
+
+Rel(ProtocolAdapter, partnerDevices, "Взаимодействует по стандартным протоколам")
+
+Rel(partnerDevices, TelemetryHandler, "Передает данные устройств")
+
+Rel(TelemetryHandler, TelemetryService, "Передает данные телеметрии устройств")
+
+@enduml

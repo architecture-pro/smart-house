@@ -1,8 +1,4 @@
--- Create the database if it doesn't exist
-CREATE DATABASE smarthome;
-
--- Connect to the database
-\c smarthome;
+-- Creating a base using Docker Compose
 
 -- Create the sensors table
 CREATE TABLE IF NOT EXISTS sensors (

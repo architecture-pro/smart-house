@@ -1,0 +1,19 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Telemetry {
+  id        String   @id @default(uuid())
+  deviceId  String
+  type      String
+  value     String
+  timestamp DateTime @default(now())
+
+  @@map("telemetry")
+}

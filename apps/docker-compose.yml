@@ -1,13 +1,120 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
     container_name: smarthome-postgres
-  ## тут нужно добавить настройки
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smarthome
+
+    ports:
+      - '5432:5432'
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d smarthome']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - smarthome-network
+
+  telemetry-postgres:
+    image: postgres:16-alpine
+    container_name: telemetry-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: telemetry
+
+    ports:
+      - '5433:5432'
+
+    volumes:
+      - telemetry_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d telemetry']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - smarthome-network
+
+  telemetry-service:
+    build:
+      context: ./telemetry-service
+      dockerfile: Dockerfile
+
+    container_name: telemetry-service
+
+    depends_on:
+      telemetry-postgres:
+        condition: service_healthy
+
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@telemetry-postgres:5432/telemetry
+
+    ports:
+      - '3000:3000'
+
+    networks:
+      - smarthome-network
 
   temperature-api:
-  ## тут нужно добавить приложение
+    build:
+      context: ./temperature-api
+      dockerfile: Dockerfile
+
+    container_name: temperature-api
+
+    ports:
+      - '8081:8081'
+
+    networks:
+      - smarthome-network
+
+  device-postgres:
+    image: postgres:16-alpine
+    container_name: device-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: devices
+    ports:
+      - '5434:5432'
+    volumes:
+      - device_postgres_data:/var/lib/postgresql/data
+      - ./device-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d devices']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smarthome-network
+
+  device-service:
+    build:
+      context: ./device-service
+      dockerfile: Dockerfile
+    container_name: device-service
+    depends_on:
+      device-postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@device-postgres:5432/devices
+    ports:
+      - '8082:8082'
+    networks:
+      - smarthome-network
 
   app:
     build:
@@ -19,17 +126,24 @@ services:
         condition: service_healthy
       temperature-api:
         condition: service_started
+      device-service:
+        condition: service_started
+      telemetry-service:
+        condition: service_started
     environment:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
       - TEMPERATURE_API_URL=http://temperature-api:8081
+      - DEVICE_SERVICE_URL=http://device-service:8082
+      - TELEMETRY_SERVICE_URL=http://telemetry-service:3000
     ports:
-      - "8080:8080"
-    restart: unless-stopped
+      - '8080:8080'
     networks:
       - smarthome-network
 
 volumes:
   postgres_data:
+  telemetry_postgres_data:
+  device_postgres_data:
 
 networks:
   smarthome-network:

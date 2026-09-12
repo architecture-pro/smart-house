@@ -8,14 +8,23 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
 	"smarthome/db"
 	"smarthome/handlers"
 	"smarthome/services"
-
+	_ "smarthome/docs"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title Smart Home API
+// @version 1.0
+// @description REST API экосистемы Smart Home.
+// @description API используется для синхронного взаимодействия с сервисами управления устройствами и телеметрии.
+// @description Запросы Device API маршрутизируются в Device Service.
+// @description Запросы Telemetry API маршрутизируются в Telemetry Service.
+
+// @BasePath /api/v1
 func main() {
 	// Set up database connection
 	dbURL := getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/smarthome")
@@ -32,8 +41,23 @@ func main() {
 	temperatureService := services.NewTemperatureService(temperatureAPIURL)
 	log.Printf("Temperature service initialized with API URL: %s\n", temperatureAPIURL)
 
+	// Initialize device service
+	deviceServiceURL := getEnv("DEVICE_SERVICE_URL", "http://localhost:8082")
+	deviceService := services.NewDeviceService(deviceServiceURL)
+	log.Printf("Device service initialized with API URL: %s\n", deviceServiceURL)
+
+	// Initialize telemetry service
+	telemetryServiceURL := getEnv("TELEMETRY_SERVICE_URL", "http://localhost:3000")
+	telemetryService := services.NewTelemetryService(telemetryServiceURL)
+	log.Printf("Telemetry service initialized with API URL: %s\n", telemetryServiceURL)
+
 	// Initialize router
 	router := gin.Default()
+
+	router.GET(
+		"/swagger/*any",
+		ginSwagger.WrapHandler(swaggerFiles.Handler),
+	)	
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
@@ -48,6 +72,14 @@ func main() {
 	// Register sensor routes
 	sensorHandler := handlers.NewSensorHandler(database, temperatureService)
 	sensorHandler.RegisterRoutes(apiRoutes)
+
+	// Register device routes
+	deviceHandler := handlers.NewDeviceHandler(deviceService)
+	deviceHandler.RegisterRoutes(apiRoutes)
+
+	// Register telemetry routes
+	telemetryHandler := handlers.NewTelemetryHandler(telemetryService)
+	telemetryHandler.RegisterRoutes(apiRoutes)
 
 	// Start server
 	srv := &http.Server{

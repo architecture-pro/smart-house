@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS devices (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    status VARCHAR(50) NOT NULL
+);

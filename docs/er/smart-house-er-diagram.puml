@@ -1,0 +1,79 @@
+@startuml
+
+title Smart House ER Diagram
+
+entity User {
+    * id : UUID <<PK>>
+    --
+    name : String
+    email : String
+}
+
+entity House {
+    * id : UUID <<PK>>
+    --
+    name : String
+}
+
+entity UserHouse {
+    * user_id : UUID <<PK, FK>>
+    * house_id : UUID <<PK, FK>>
+}
+
+entity DeviceDictionary {
+    * id : UUID <<PK>>
+    --
+    name : String
+}
+
+entity Device {
+    * id : UUID <<PK>>
+    --
+    house_id : UUID <<FK>>
+    dictionary_device_id : UUID <<FK>>
+    name : String
+    serial_number : String
+    status : String
+    location: String
+}
+
+entity TelemetryData {
+    * id : UUID <<PK>>
+    --
+    device_id : UUID <<FK>>
+    type : String
+    value : String
+    timestamp : DateTime
+}
+
+entity Automation {
+    * id : UUID <<PK>>
+    --
+    house_id : UUID <<FK>>
+    name : String
+    is_active : Boolean
+}
+
+entity Rule {
+    * id : UUID <<PK>>
+    --
+    automation_id : UUID <<FK>>
+    device_id : UUID <<FK>>
+    condition : String
+    action : String
+}
+
+User ||--o{ UserHouse : has access
+House ||--o{ UserHouse : has users
+
+House ||--o{ Device : contains
+DeviceDictionary ||--o{ Device : defines
+
+Device ||--o{ TelemetryData : generates
+
+House ||--o{ Automation : has
+Automation ||--o{ Rule : contains
+
+Device ||--o{ Rule : executes
+
+@enduml
