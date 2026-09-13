@@ -1,0 +1,38 @@
+@startuml
+
+title Smart House Telemetry Service Component Diagram
+
+top to bottom direction
+
+!include ../c4-local/C4-Component.puml
+
+Container(ApiGateway, "API Controller", "Go", "Принимает, проверяет и маршрутизирует запросы")
+
+Container(DeviceIntegrationService, "Сервис Интеграции Устройств", "Go", "Интеграция с устройствами по стандартным протоколам")
+
+Container(AutomationService, "Сервис Автоматизации", "Go", "Управление сценариями автоматизации")
+
+Container_Boundary(TelemetryService, "Telemetry Service") {
+
+    Component(TelemetryController, "Контроллер телеметрии", "Обрабатывает запросы на получение и прием данных телеметрии устройств")
+
+    Component(ServiceLayer, "Сервисный слой", "Бизнес-логика")
+
+    Component(DataAccessLayer, "Слой доступа к данным", "Работа с данными телеметрии устройств")
+}
+
+ContainerDb(TelemetryDb, "БД Телеметрии", "PostgreSQL", "Хранение данных телеметрии устройств")
+
+Rel(ApiGateway, TelemetryController, "Вызывает API Сервиса Телеметрии", "JSON/HTTPs RestAPI")
+
+Rel(DeviceIntegrationService, TelemetryController, "Передает данные телеметрии устройств")
+
+Rel(TelemetryController, ServiceLayer, "Вызывает бизнес-логику")
+
+Rel(ServiceLayer, DataAccessLayer, "Читает и сохраняет данные")
+
+Rel(DataAccessLayer, TelemetryDb, "Читает и сохраняет телеметрические данные", "PostgreSQL")
+
+Rel( ServiceLayer, AutomationService, "Передает данные телеметрии для проверки правил и сценариев")
+
+@enduml

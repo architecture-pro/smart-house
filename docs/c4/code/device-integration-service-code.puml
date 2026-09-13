@@ -1,0 +1,20 @@
+@startuml
+
+title Smart House Device Integration Service Code Diagram
+
+top to bottom direction
+
+!include ../c4-local/C4-Code.puml
+
+class ProtocolAdapter {
+    +String protocol
+    +void connect()
+    +void sendCommand()
+}
+
+class TelemetryHandler {
+    +void receiveData()
+    +void sendTelemetry()
+}
+
+@enduml

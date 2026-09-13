@@ -1,0 +1,17 @@
+@startuml
+title Warm House Context Diagram
+
+top to bottom direction
+
+!include ../../c4-local/C4-Context.puml
+
+Person(user, "User", "A user of the smart home system")
+
+System(SmartHouseSystem, "Smart House System", "Smart home system management")
+
+System_Ext(api, "Third-Party API", "External API for controlling sensors in the home")
+
+Rel(user, SmartHouseSystem, "Monitors and controls the sensors in the house")
+Rel(SmartHouseSystem, api, "Gets data from the installed sensors and manages them")
+
+@enduml

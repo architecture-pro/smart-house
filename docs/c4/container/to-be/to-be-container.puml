@@ -1,0 +1,58 @@
+@startuml
+
+title Smart House Container Diagram
+
+top to bottom direction
+
+!include ../../c4-local/C4-Container.puml
+
+Person(user,"Пользователь", "Пользователь Smart Home")
+
+System_Ext(partnerDevices,"Устройства", "Устройства умного дома")
+
+Container_Boundary(SmartHouseSystem, "Smart Home") {
+
+    Container(WebApp,"Веб приложение", "Angular", "Пользовательский интерфейс")
+
+    Container(ApiGateway, "API Controller", "Go", "Принимает, проверяет и маршрутизирует запросы")
+
+    Container(UserService, "Сервис Пользователей", "Go", "Аутентификация пользователей и управление доступом к домам")
+
+    ContainerDb(UserDb, "БД Пользователей", "PostgreSQL", "Хранение и обработка данных пользователей")
+
+    Container(DeviceService, "Сервис Управления устройствами", "Go", "Подключение и управление устройствами")
+
+    ContainerDb(DeviceDb, "БД Устройств", "PostgreSQL", "Хранение и обработка данных и настроек устройств")
+
+    Container(TelemetryService, "Сервис Телеметрии", "NestJS", "Обработка данных телеметрии устройств")
+
+    ContainerDb(TelemetryDb, "БД Телеметрии", "PostgreSQL", "Хранение телеметрии устройств")
+
+    Container(AutomationService, "Сервис Автоматизации", "Go", "Управление сценариями автоматизации")
+
+    ContainerDb(AutomationDb, "БД Автоматизации", "PostgreSQL", "Хранение и обработка сценариев, правил автоматизации")
+
+    Container(DeviceIntegrationService, "Сервис Интеграции Устройств", "Go", "Интеграция с устройствами по стандартным протоколам")
+}
+
+Rel(user, WebApp, "Использует ресурс для управления установленных устройств в своем доме")
+Rel(WebApp, ApiGateway, "Вызывает API", "JSON/HTTPs RestAPI")
+
+Rel(ApiGateway, UserService, "Вызывает API Сервиса Пользователей", "JSON/HTTPs RestAPI")
+Rel(ApiGateway, DeviceService, "Регистрирует и управляет устройствами", "JSON/HTTPs RestAPI")
+Rel(ApiGateway, TelemetryService, "Вызывает API Сервиса Телеметрии", "JSON/HTTPs RestAPI")
+Rel(TelemetryService, AutomationService, "Передает данные телеметрии для проверки правил и сценариев")
+Rel(ApiGateway, AutomationService, "Вызывает API Сервиса Автоматизации при установки сценариев, правил", "JSON/HTTPs RestAPI")
+
+Rel(UserService, UserDb, "Читает и сохраняет данные пользователей", "PostgreSQL")
+Rel(DeviceService, DeviceDb, "Читает и сохраняет данные устройств", "PostgreSQL")
+Rel(TelemetryService, TelemetryDb, "Сохраняет и получает телеметрию", "PostgreSQL")
+Rel(AutomationService, AutomationDb, "Читает и сохраняет сценарии", "PostgreSQL")
+
+Rel(DeviceService, DeviceIntegrationService, "Управляет установленными устройствами")
+Rel(DeviceIntegrationService, TelemetryService, "Передает данные телеметрии устройств")
+Rel(AutomationService, DeviceIntegrationService, "Передает введенные пользователем команды выбранным устройствам (управление)")
+
+Rel(DeviceIntegrationService, partnerDevices, "Взаимодействует по стандартным протоколам")
+
+@enduml

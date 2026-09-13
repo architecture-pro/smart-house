@@ -1,0 +1,26 @@
+@startuml
+
+title Smart House Automation Service Code Diagram
+
+top to bottom direction
+
+!include ../c4-local/C4-Code.puml
+
+class Scenario {
+    +String id
+    +String name
+    +void activate()
+    +void deactivate()
+}
+
+class Rule {
+    +String id
+    +String condition
+    +String action
+    +void check()
+    +void execute()
+}
+
+Scenario "1" *-- "0..*" Rule : includes
+
+@enduml

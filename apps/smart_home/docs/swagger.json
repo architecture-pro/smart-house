@@ -1,0 +1,254 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API экосистемы Smart Home.\nAPI используется для синхронного взаимодействия с сервисами управления устройствами и телеметрии.\nЗапросы Device API маршрутизируются в Device Service.\nЗапросы Telemetry API маршрутизируются в Telemetry Service.",
+        "title": "Smart Home API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/devices": {
+            "get": {
+                "description": "Возвращает список устройств из Device Service",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Получить список устройств",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/services.DeviceResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Регистрирует новое устройство через Device Service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Зарегистрировать устройство",
+                "parameters": [
+                    {
+                        "description": "Данные устройства",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/services.DeviceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/telemetry": {
+            "get": {
+                "description": "Возвращает данные телеметрии устройств из Telemetry Service",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "Получить телеметрию",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/services.TelemetryResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Передаёт новые данные телеметрии в Telemetry Service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "Сохранить телеметрию",
+                "parameters": [
+                    {
+                        "description": "Данные телеметрии",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateTelemetryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/services.TelemetryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.CreateDeviceRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Temperature Sensor"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "temperature"
+                }
+            }
+        },
+        "handlers.CreateTelemetryRequest": {
+            "type": "object",
+            "required": [
+                "deviceId",
+                "type",
+                "value"
+            ],
+            "properties": {
+                "deviceId": {
+                    "type": "string",
+                    "example": "device-1"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "temperature"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "23.5"
+                }
+            }
+        },
+        "handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "internal server error"
+                }
+            }
+        },
+        "services.DeviceResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "81bb755d-5eb1-4a89-90d2-c2ffce58fa5a"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Temperature Sensor"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "registered"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "temperature"
+                }
+            }
+        },
+        "services.TelemetryResponse": {
+            "type": "object",
+            "properties": {
+                "deviceId": {
+                    "type": "string",
+                    "example": "device-1"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "6fc599a1-8763-411d-b203-0f947cefdc06"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "example": "2026-09-11T10:58:56.296Z"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "temperature"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "23.5"
+                }
+            }
+        }
+    }
+}

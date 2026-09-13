@@ -1,0 +1,26 @@
+@startuml
+
+title Smart House User Service Code Diagram
+
+top to bottom direction
+
+!include ../c4-local/C4-Code.puml
+
+class User {
+    +String id
+    +String name
+    +String email
+    +void register()
+    +void login()
+}
+
+class House {
+    +String id
+    +String name
+    +void addUser()
+    +void removeUser()
+}
+
+User "0..*" -- "0..*" House : has access
+
+@enduml
